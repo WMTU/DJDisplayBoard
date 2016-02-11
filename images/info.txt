@@ -1,0 +1,2 @@
+Insert images into this folder!
+The PHP script should automagically parse and make use of them.
