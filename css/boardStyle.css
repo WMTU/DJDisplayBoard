@@ -1,0 +1,439 @@
+html {
+  height: 100%;
+}
+
+body {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: 0;
+  background-image: url("../bg.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  color:#FFF; 
+  font-family: 'Trebuchet MS', sans-serif;   
+  text-shadow: 6px 6px 6px #000;
+  font-size: 2.5vw;
+  overflow: visible;
+}
+
+/*for alerts*/
+#alert {
+  display: none;
+  position: absolute;
+  font-size: 2em;
+  top: 37.5%;
+  left: 12.5%;
+  z-index: 10;
+  width: 75%;
+  height: 25%;
+  border-radius: 25px;
+  background-color: rgba(0,0,0,.9);
+  text-align: center;
+  animation-name: alert-animate;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+#alert-centered {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  
+}
+
+@keyframes alert-animate {
+    0%   {
+      -webkit-box-shadow: 0 0 50px 25px #990000;
+    }
+    100%  { 
+      -webkit-box-shadow: 0 0 120px 50px #FF0000;
+    }
+}
+
+/*for the iss */
+.fullscreen-bg {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: -100;
+}
+
+.fullscreen-bgvideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/*for the clock */
+#clock {
+  position: absolute;
+  right: 60%;
+  top: 11%;
+  display: inline-block;
+  text-align: right;
+  line-height: 95%;
+  font-size: 2.5vw;
+}
+
+#clock h1 {
+  display: inline;
+  font-size: 8vw;
+  font-weight: bold;
+}
+
+#clock span {
+  text-shadow: 4px 4px 4px #000;
+}
+
+/* for the ticker */
+#ticker{
+  position: absolute;
+  top: 30%;
+  right: 2%;
+  width: 62%;
+  height: 9%;
+  padding-left: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-radius: 15px;
+  background: rgba(0,0,0, .5);
+  border: 3px solid white;
+}
+
+#ticker-text {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-weight: 300;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* for the weather */
+#weather {
+  position: absolute;
+  left: 43%;
+  top: 8%;
+  height: 19vh;
+  min-width: 42vw;
+  overflow: visibile;
+  white-space: nowrap;
+}
+
+#weather-icon {  
+  text-shadow: 10px 10px 6px #000;
+  position: relative;
+  vertical-align: text-top;
+  top: -1vh;
+  float: left;
+  font-size: 17vh;
+}
+
+#weather h2 {
+  display: inline;
+  color: #FFFFFF;
+  font-size: 1.25em;
+  font-weight: 300;
+}
+
+.temperature {
+  position: relative;
+  top: 5px;
+  float: left;
+  padding: 0px 15px;  
+  color: #FFFFFF;
+  font-size: 1.75em;
+}
+
+span.degree-symbol {
+  margin-left: 0px;
+  margin-right: 25px;
+  font-size: .8em;
+  vertical-align: top;
+}
+
+#highlow {
+  position: relative;
+  top: -5px;
+  color: #4b4e57;
+  font-size: 0.4em;
+  padding-left: 15px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: top;
+  text-shadow: 2px 2px 6px #000;
+}
+
+#high {
+  
+}
+
+#low {
+  border-top: 5px solid #4b4e57;
+  display: block;
+}
+
+#weather ul {
+  position:relative;
+  left: 0px;
+  top: -15px;
+  margin-bottom: 70px;
+  white-space: nowrap;
+}
+
+#weather li {
+  vertical-align: bottom;
+  white-space: nowrap;
+  display: block;
+  float: left;
+  margin-right: 30px;
+  color: #4b4e57; 
+  font-size: 1.25em;
+}
+
+#weather li:last-child {
+  margin-right: 0px;
+}
+
+#weather-info {
+  text-shadow: 3px 3px 6px #000;
+  white-space: nowrap;
+  overflow: visible;
+  position: absolute;
+  bottom: 0px;
+  left: 200px;
+  width: 100%;
+}
+
+#weather li span {
+  position: relative;
+  top: 10px;
+  padding-left: 10px;
+  color: #FFFFFF; 
+  font-size: 0.75em;
+  line-height: 30px;
+  vertical-align: top;
+  font-weight: 300;
+}
+
+/* for the trackback */
+#trackback {
+  position: absolute;
+  left: 5%;
+  top: 20%;
+  float:left;
+  width: 29%;
+  font-size: 3vw;
+}
+
+#trackback h1 {  
+  position: relative;
+  top: 15px;
+  left: 25px;
+  font-size: 1em;
+}
+
+#djlog {
+  position: absolute;
+  top: 30%;
+  left: 7%;
+  width: 25%;
+  margin: 25px 10px;
+  padding: 2px 5px;
+}
+
+.trackback {
+  margin-top: 10px;
+  border-radius: 5px;
+  padding: 15px;
+  font-size: .5em;
+  white-space: nowrap;
+  box-shadow: 2px 5px 5px #222;
+  border: 3px solid rgba(255,255,255,1);
+  background-color: rgba(0,0,0,0.8);
+  overflow: hidden;
+  -webkit-transition: .3s linear;
+}
+
+.trackback h3 {
+  margin-top: 0px;
+  margin-bottom: 3px;
+}
+
+.trackback p {
+  margin: 0;
+  margin-left: 5px;
+}
+
+.marquee-wrap {
+  overflow: hidden;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.marquee {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+
+  /*Starting Position*/
+  -moz-transform:translateX(100%);
+  -webkit-transform:translateX(100%);	
+  transform:translateX(100%);
+
+  /* Apply animation to this element */	
+  -moz-animation: scroll-left 10s linear infinite;
+  -webkit-animation: scroll-left 10s linear infinite;
+  animation: scroll-left 10s linear infinite;
+}
+
+/* Move it (define the animation) */
+@-moz-keyframes scroll-left {
+ 0%   { -moz-transform: translateX(100%); }
+ 100% { -moz-transform: translateX(-200%); }
+}
+@-webkit-keyframes scroll-left {
+ 0%   { -webkit-transform: translateX(100%); }
+ 100% { -webkit-transform: translateX(-200%); }
+}
+@keyframes scroll-left {
+ 0%   { 
+ -moz-transform: translateX(100%); /* Browser bug fix */
+ -webkit-transform: translateX(100%); /* Browser bug fix */
+ transform: translateX(100%); 		
+ }
+ 100% { 
+ -moz-transform: translateX(-200%); /* Browser bug fix */
+ -webkit-transform: translateX(-200%); /* Browser bug fix */
+ transform: translateX(-200%); 
+ }
+}
+
+
+/* for the twitter */
+#twitter-feed {
+  position: absolute;
+  left: 36%;
+  width: 30%;
+  top: 42%;
+  height: 50%;
+  overflow: hidden;
+}
+
+.tweet {
+  border-radius: 10px;
+  width: 95%;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: rgba(0,0,0,.8);
+  -webkit-transition: .3s linear;
+}
+
+.tweet-name {
+  display: inline-block;
+}
+
+.tweet-date {
+  display:inline-block;
+  vertical-align: top;
+  float: right;
+  text-align: right;
+  font-size: .5em;
+}
+
+.tweet h3 {
+  display: inline;
+  margin-left: 15px;
+  vertical-align: top;
+  margin-top: 0px;
+  font-size: .5em;
+  margin-bottom: 0px;
+}
+
+.tweet p {
+  position: relative;
+  top: -15px;
+  font-size: .45em;
+  margin: 0px 15px;
+  /*padding-left: 22px; */
+  text-indent: 48px;
+  margin-top: 0px;
+  word-wrap: break-word;
+}
+
+.tweet img {
+  height: 48px;
+  width: 48px;
+}
+
+.collapsed {
+  display: block;
+  overflow: hidden;
+  line-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 0;
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  border-width: 0px;
+}
+
+/* for the incident */
+#incident {
+  z-index: -10;
+  position: absolute;
+  top: 0%;
+  right: 0%;
+  height:10%;
+  border: 3px solid white;
+  border-top: 0px solid black;
+  border-right: 0px solid black; 
+  border-radius: 0px 0px 0px 25px;
+  background: rgba(0,0,0,.8);
+  font-size: .5em;
+  padding-bottom: 5px;
+}
+
+#incident h1 {
+  font-size: 4em;
+  display: inline-block;
+  margin-top: 0px;
+  margin-left: 45px;
+}
+
+#incident span{
+  display:inline-block;
+  margin-top: 30px;
+  margin-left: 15px;
+  margin-right: 45px;
+  vertical-align: top;
+}
+
+/* for the images */
+#image-feed {
+  position: absolute;
+  right: 2.5%;
+  /* bottom: 2.5%; */
+  top: 42%;
+  width: 30%;
+  height: 50%;
+}
+
+#images {
+  position: absolute;
+  /*bottom: 0px;*/
+  top: 0px;
+  right: 0px;
+  max-width: 100%;
+  max-height: 100%;
+}
