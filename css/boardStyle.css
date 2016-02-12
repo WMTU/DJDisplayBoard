@@ -394,11 +394,11 @@ span.degree-symbol {
   position: absolute;
   top: 0%;
   right: 0%;
+  width: 14%;
   height:10%;
   border: 3px solid white;
-  border-top: 0px solid black;
-  border-right: 0px solid black; 
-  border-radius: 0px 0px 0px 25px;
+  border-top: none;
+  border-right: none; 
   background: rgba(0,0,0,.8);
   font-size: .5em;
   padding-bottom: 5px;
@@ -415,7 +415,37 @@ span.degree-symbol {
   display:inline-block;
   margin-top: 30px;
   margin-left: 15px;
-  margin-right: 45px;
+  vertical-align: top;
+}
+
+/* for the stream */
+#stream {
+  z-index: -10;
+  position: absolute;
+  top: 10.65%;
+  right: 0%;
+  width: 14%;
+  height: 10%;
+  border: 3px solid white;
+  border-top: none;
+  border-right: none; 
+  border-radius: 0px 0px 0px 25px;
+  background: rgba(0,0,0,.8);
+  font-size: .5em;
+  padding-bottom: 5px;
+}
+
+#stream h1 {
+  font-size: 4em;
+  display: inline-block;
+  margin-top: 0px;
+  margin-left: 45px;
+}
+
+#stream span{
+  display:inline-block;
+  margin-top: 30px;
+  margin-left: 15px;
   vertical-align: top;
 }
 

@@ -219,6 +219,11 @@ function check_logging(){
 function tenSecondRefresh() {
   //also do the days since incident
   $('#dayssince').load("./incident.php");
+
+  //Get web stream listeners
+  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", function( data ) {
+    czech_listeners(data);
+  });
   
   //Do the TrackBack Feed
   $.getJSON( "./trackback.php?first=false", function( data ) {
@@ -240,6 +245,14 @@ function tenSecondRefresh() {
 
   //start animation sequence
   setTimeout(tenSecondRefresh,10000);
+}
+
+var czech_listeners = function(data) {
+  var count = 0;
+  for ( var i = 0; i < data.icestats.source.length; i++ ) {
+    count = count + data.icestats.source[i].listeners;
+  }
+  $('#listeners').text(count);
 }
 
 var cycleDjLog = function(i, data) {  

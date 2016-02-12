@@ -54,6 +54,10 @@
     <h1 id="dayssince">0</h1><span>Days since<br /> last incident</span>
   </div>
   
+  <div id="stream">
+    <h1 id="listeners">0</h1><span>Web stream<br /> listeners</span>
+  </div>
+  
   <div id="twitter-feed">
   </div>
   
