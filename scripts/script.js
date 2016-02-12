@@ -392,6 +392,11 @@ $(function() {
   //populate days since
   $('#dayssince').load("./incident.php");
  
+  //Get web stream listeners
+  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", function( data ) {
+    czech_listeners(data);
+  });
+
   //set the song logging alert
   check_logging();
  
