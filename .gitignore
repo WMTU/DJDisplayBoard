@@ -6,4 +6,5 @@ config.php
 ############################################
 images/*.jpg
 bg.png
+bgLight.png
 tickets.txt
