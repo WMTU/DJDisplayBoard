@@ -1,0 +1,9 @@
+# pretty much all of our confidential info #
+############################################
+config.php
+
+# we don't need to store the images either #
+############################################
+images/*.jpg
+bg.png
+tickets.txt
