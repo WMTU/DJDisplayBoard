@@ -21,13 +21,18 @@ if(isset($_POST['done'])) {
   //background updater
   //if there is actually background image
   if (isset($_FILES['newBG'])) {
-
+    $whitelist = array('image/jpeg','image/png','image/bmp','image/svg+xml');
     //if it's an image
-    if (exif_imagetype($_FILES['newBG']['tmp_name']) > 0) {
-      //replace the old one!
-      move_uploaded_file($_FILES['newBG']['tmp_name'], './bg.png');
+    $fi = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $fi->file($_FILES['newBG']['tmp_name']);
+    //echo $mime;
+    if (in_array($mime, $whitelist)) {
+      //repace the old one!
+      if (!move_uploaded_file($_FILES['newBG']['tmp_name'], './BG')) {
+        echo "Background: Error uploading or moving file!</br>";
+      }
     } else {
-      echo "Background was not an image file!";
+      echo "Background: Image not supported!</br>";
     }
   }
 

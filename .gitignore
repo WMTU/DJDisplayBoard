@@ -5,6 +5,5 @@ config.php
 # we don't need to store the images either #
 ############################################
 images/*.jpg
-bg.png
-bgLight.png
-tickets.txt
+BG
+tickers.txt
