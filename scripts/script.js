@@ -1,5 +1,5 @@
-function refresh_ticker(){
-  //slide to the left
+function refresh_ticker() {
+  // slide to the left
   var $marginLefty = $('#ticker-text');
   $marginLefty.animate({
     marginLeft: parseInt($marginLefty.css('marginLeft'),10) == 0 ?
@@ -8,17 +8,17 @@ function refresh_ticker(){
   }, 600, load_ticker);
 };  
 
-function load_ticker(){
+function load_ticker() {
   // Do the Thing Here
   $('#ticker-span').load('./ticker.php', '', show_ticker);
 };
 
-function show_ticker(){
-  //Fix the text
+function show_ticker() {
+  // Fix the text
   $('#ticker-text').textfill({maxFontPixels: 64});
   $('#ticker-text').css('margin-top', (parseInt($('#ticker').height(),10) - parseInt($('#ticker-span').height(),10))/2);
   
-  //now slide to the right
+  // now slide to the right
   var $marginLefty = $('#ticker-text');
   $marginLefty.animate({
     marginLeft: parseInt($marginLefty.css('marginLeft'),10) == 0 ?
@@ -29,7 +29,7 @@ function show_ticker(){
   //repeat
   setTimeout(refresh_ticker,5000);
 };
-  
+
 function refresh_weather() {
   // Forming the query for Yahoo's weather forecasting API with YQL
   // http://developer.yahoo.com/weather/
@@ -45,9 +45,7 @@ function refresh_weather() {
   // Make a weather API request (it is JSONP, so CORS is not an issue):
   $.getJSON(weatherYQL.replace('WID',woeid), function(r){
     if(r.query.count == 1){
-
       // Create the weather items in the #scroller UL
-
       var item = r.query.results.channel;
       
       //get wind, atmosphere
@@ -188,130 +186,138 @@ function refresh_weather() {
           $("#weather-icon").attr('class', 'wi wi-day-sunny');
           break;
       }
-      
-      //high and low
+
+      // high and low
       item = r.query.results.channel.item.forecast[0];
       $('#high').html(item.high);
       $('#low').html(item.low);
-      
-    }
-    else {
+    } else
       showError("Error retrieving weather data!");
-    }
   });
-  
-  //every 15 minutes
+
+  // every 15 minutes
   setTimeout(refresh_weather, 1000*60*15);
 };
 
-function check_logging(){
-  //populate 
+// Ping logwarn script to see if DJs are actively
+// logging their songs or not
+function check_logging() {
+  // Ping the logwarn script, which checks the submit time
+  // of the most recent song log entry and returns true if
+  // it is more than 17m30s ago
   $.getJSON( "./logwarn.php", function( data ) {
-    //data should be a boolean true or false      
-    if (data) {
-      $('#alert').css('display','initial'); 
-    } else {
-      $('#alert').css('display','none'); 
-    } 
+    // Result data should be a boolean true or false
+
+    // Toggle display of the alert overlay
+    if (data)
+      $('#alert').css('display','initial');
+    else
+      $('#alert').css('display','none');
   });
 };
-  
-function tenSecondRefresh() {
-  //also do the days since incident
-  $('#dayssince').load("./incident.php");
 
-  //Get web stream listeners
-  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", function( data ) {
-    czech_listeners(data);
-  });
-  
-  //Do the TrackBack Feed
-  $.getJSON( "./trackback.php?first=false", function( data ) {
-    var i = 0;
-    cycleDjLog(i, data);
-  });
-  
-  //Do the Twitter Feed
-  $.getJSON( "./twitter.php?first=false", function( data ) {
-    var i = 0;
-    cycleTwitterFeed(i, data, false);
-  });
-  
-  //do the images
-  cycleImageFeed();
-
-  //warn if songs aren't logged
-  check_logging();  
-
-  //start animation sequence
-  setTimeout(tenSecondRefresh,10000);
-}
-
-var czech_listeners = function(data) {
+// Count the total number of listeners on all web
+// stream mount points
+function czech_listeners( data ) {
   var count = 0;
+
+  // Loop over the number of mount points, and add each
+  // of their listener counts to count
   for ( var i = 0; i < data.icestats.source.length; i++ ) {
     count = count + data.icestats.source[i].listeners;
   }
+
+  // Update the listener count field on the board with
+  // the count
   $('#listeners').text(count);
 }
 
-var cycleDjLog = function(i, data) {  
-  if(i < data.length) {
-    //hide and remove the last element
+// If new song objects are present in data, transition the
+// bottom object off the trackback list and the new on until
+// all five most recently logged songs are displayed
+function check_trackback( i, data ) {
+  // Run if there are new song objects
+  if ( i < data.length ) {
+    // Select the last visible song on the trackback list
     var lasttrack = $('#djlog').children().last();
-    //lasttrack.slideToggle('normal', hideDjLogItem(i, data, lasttrack));
+
+    // Hide the last visible song
     lasttrack.toggleClass('collapsed');
-    setTimeout(hideDjLogItem(i, data, lasttrack), 300);
+
+    // Wait 300 milliseconds, then remove the last song
+    // and display a new one
+    setTimeout(cycle_trackback(i, data, lasttrack), 300);
   }
 };
 
-var hideDjLogItem = function(i, data, lasttrack) {
+// Remove the last song from the trackback list, and add
+// and show one corresponding to the i-th song object in
+// data, then call check_trackback again to check whether
+// or not there are additional new songs objects to add
+function cycle_trackback( i, data, lasttrack ) {
+  // Remove the last song on the trackback list
   lasttrack.remove(); 
-        
-  //get and append new element
+
+  // Get the new song object and append it to the
+  // trackback list
   var html = $(data[i]);
   html.toggleClass('collapsed');
   $('#djlog').prepend(html);
 
-  marqueeWrapChild(html, html.children().eq(0));
-  marqueeWrapChild(html, html.children().eq(1));
-  marqueeWrapChild(html, html.children().eq(2));  
-      
-  setTimeout(function() {
+  // Wrap the song, artist and album text rows with
+  // marquee tags if the contents are too long for
+  // the container element
+  marquee_wrap(html, html.children().eq(0));
+  marquee_wrap(html, html.children().eq(1));
+  marquee_wrap(html, html.children().eq(2));  
+
+  // Wait five milliseconds, then show the new song
+  // on the trackback list, then wait 300 milliseconds
+  // and check for more new song objects
+  setTimeout( function() {
     html.toggleClass('collapsed');
-    setTimeout( cycleDjLog(++i, data) ,500);
-  }, 5);  
+    setTimeout( check_trackback( ++i, data ), 500 );
+  }, 5 );
 };
 
-var marqueeWrapChild = function(container, child) { 
-  var oText = child.html();
-  child.html('<span>' + oText + '</span>');
-  var cWidth = child.children().eq(0).width();
-  var oWidth = container.width();
-       
-  child.html(oText); 
-  if (cWidth > oWidth) {
-    //add a marquee
-    child.html('<div class="marquee-wrap"><div class="marquee">' + oText + '</div></div>');
-  }
+// Wrap child in marquee tags if it is wider than
+// container
+function marquee_wrap( container, child ) {
+  // Wrap the child element's contents with a span
+  // and measure both its width and the container's
+  // width
+  var original_text = child.html();
+  child.html('<span>' + original_text + '</span>');
+  var child_width = child.children().eq(0).width();
+  var container_width = container.width();
+
+  // Restore the original state of the child element
+  child.html(original_text);
+
+  // If the child's width is greater than the
+  // container, wrap the child's contents with tags
+  // to pad its left and right edges and add a
+  // marquee scrolling effect
+  if ( child_width > container_width )
+    child.html('<div class="marquee-wrap"><div class="marquee">' + original_text + '</div></div>');
 };
- 
-var cycleTwitterFeed = function(i, data, cut) {
-  if(i < data.length) { 
-    //get new element ready mark its height and hide it 
+
+function cycleTwitterFeed( i, data, cut ) {
+  if ( i < data.length ) {
+    // Get new element ready, mark its height, and hide it
     var html = $(data[i]);
     $('#twitter-feed').prepend(html);
     html.toggleClass('collapsed');
 
     var lasttweet = $('#twitter-feed').children().last();
-      
-    //take some measurements
-    var bottom = lasttweet.offset().top + lasttweet.height();  
+
+    // Take some measurements
+    var bottom = lasttweet.offset().top + lasttweet.height();
     var cBottom = $('#twitter-feed').offset().top + $('#twitter-feed').height();
-      
-    //if the LAST element clips
-    if (cut || bottom > cBottom) {
-      //FINALLY animate everything
+
+    // If the LAST element clips
+    if ( cut || bottom > cBottom ) {
+      // FINALLY animate everything
       html.toggleClass('collapsed');
       lasttweet.toggleClass('collapsed');
       setTimeout(function() {
@@ -322,87 +328,105 @@ var cycleTwitterFeed = function(i, data, cut) {
     } else {
       html.toggleClass('collapsed');
       cycleTwitterFeed(++i, data, false);
-    }      
+    }
   }
 };
 
-
-var cycleImageFeed = function() {
-  $('#images').fadeOut('normal', function() {
-    $.get('./images.php', function(data) {
-      $('#images').attr('src', data);
+function cycleImageFeed() {
+  $('#images').fadeOut( 'normal', function() {
+    $.get( './images.php', function(data) {
+      $('#images').attr( 'src', data );
       $('#images').fadeIn();
-    });
-  });
+    } );
+  } );
+}
+
+function ten_second_interval() {
+  // Do the days since incident
+  $('#dayssince').load("./incident.php");
+
+  // Get web stream listeners
+  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", function( data ) {
+    czech_listeners(data);
+  } );
+
+  // Do the trackback feed
+  $.getJSON( "./trackback.php?first=false", function( data ) {
+    var i = 0;
+    check_trackback( i, data );
+  } );
+
+  // Do the Twitter feed
+  $.getJSON( "./twitter.php?first=false", function( data ) {
+    var i = 0;
+    cycleTwitterFeed( i, data, false );
+  } );
+
+  // Do the images
+  cycleImageFeed();
+
+  // Warn if songs aren't logged
+  check_logging();
+
+  // Run again in ten seconds
+  setTimeout(ten_second_interval,10000);
 }
 
 var Sync = function() {
-  //refresh the page
+  // Refresh the page
   location.reload();
 
-  //sync again in an hour
+  // Sync again in an hour
   setTimeout(Sync, 60*60*1000);
 }
 
-//on ready
-$(function() {
-  //start the clock
-  (function refresh_clock(){
-      // Do the Thing Here
+// On page ready
+$( function() {
+  // Start the clock
+  ( function refresh_clock() {
+      // Load the time onto the board
       $("#clock").load("./time.php");
-      
-      //repeat
+
+      // Repeat every second
       setTimeout(refresh_clock,1000);
-  })();
-        
-  //Populate the TrackBack Container
-  (function refresh_log(){
-    //populate the container
+  } )();
+
+  // Populate the trackback list
+  ( function refresh_log() {
+    // Populate the container
     $.getJSON( "./trackback.php?first=true", function( data ) {
-      for (var i = 0; i < data.length; i++) {        
-        //get and append new element
+      for ( var i = 0; i < data.length; i++ ) {        
+        // Get and append new element
         var html = $(data[i]);
         $('#djlog').prepend(html);
 
-        marqueeWrapChild(html, html.children().eq(0));
-        marqueeWrapChild(html, html.children().eq(1));
-        marqueeWrapChild(html, html.children().eq(2));
+        marquee_wrap( html, html.children().eq(0) );
+        marquee_wrap( html, html.children().eq(1) );
+        marquee_wrap( html, html.children().eq(2) );
         
         html.hide();
         html.slideToggle();
       }
-    });
-  })();
-  
-  //populate the twitter feed
-  (function refresh_tweets(){
-    //populate the container
+    } );
+  } )();
+
+  // Populate the twitter request feed
+  ( function refresh_tweets() {
+    // Populate the container
     $.getJSON( "./twitter.php?first=true", function( data ) {
       var i = 0;
-      cycleTwitterFeed(i, data, false);
-    });
-  })();
-  
-  //start the ticker
-  refresh_ticker();
-  
-  //start the weather
-  refresh_weather();
-  
-  //populate days since
-  $('#dayssince').load("./incident.php");
- 
-  //Get web stream listeners
-  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", function( data ) {
-    czech_listeners(data);
-  });
+      cycleTwitterFeed( i, data, false );
+    } );
+  } )();
 
-  //set the song logging alert
-  check_logging();
- 
-  //Setup Refresh on the trackback/incident tracker/and twitter feed 
-  setTimeout(tenSecondRefresh,10000);
-  
-  //refresh the page every hour
+  // Start the ticker
+  refresh_ticker();
+
+  // Start the weather
+  refresh_weather();
+
+  // Refresh the page every hour
   setTimeout(Sync, 60*60*1000); 
-});
+
+  ten_second_interval();
+} );

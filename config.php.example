@@ -1,0 +1,16 @@
+<?php
+
+return array(
+  'host' => 'database IP address',
+  'username' => 'database user',
+  'password' => 'database password',
+  'database' => 'database name',
+  'icecast_url' => 'icecast instance uri',
+  'icecast_credentials' => 'icecast user:icecast pw',
+  'oauth_access_token' => 'twitter access token',
+  'oauth_access_token_secret' => 'twitter access token secret',
+  'consumer_key' => 'twitter consumer key',
+  'consumer_secret' => 'twitter consumer secret'
+);
+
+?>
