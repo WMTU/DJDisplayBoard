@@ -199,42 +199,47 @@ function refresh_weather() {
   setTimeout(refresh_weather, 1000*60*15);
 };
 
-// Ping logwarn script to see if DJs are actively
-// logging their songs or not
+/*
+ * Displays an alert message if the DJ hasn't logged a song in a while
+ */
 function check_logging() {
-  // Ping the logwarn script, which checks the submit time
-  // of the most recent song log entry and returns true if
-  // it is more than 17m30s ago
-  $.getJSON( "./logwarn.php", function( data ) {
-    // Result data should be a boolean true or false
+  // Get the most recently logged song
+  $.getJSON( "http://10.0.1.10/log/api/v1.0/songs", {desc: true, n: 1},
+      function( data ) {
+    // Construct a date object from the song's timestamp
+    var date = new Date( data["songs"][0].ts );
 
-    // Toggle display of the alert overlay
-    if (data)
-      $('#alert').css('display','initial');
+    // If the song was logged more than 1,050,000 milliseconds ago (17m30s),
+    // display the alert message; otherwise, hide it
+    if ( new Date() - date > 1050000 )
+      $('#alert').css( 'display','initial' );
     else
-      $('#alert').css('display','none');
+      $('#alert').css( 'display','none' );
   });
 };
 
-// Count the total number of listeners on all web
-// stream mount points
+/*
+ * Counts and displays the total number of listeners on all web stream
+ * mount points
+ */
 function czech_listeners( data ) {
   var count = 0;
 
-  // Loop over the number of mount points, and add each
-  // of their listener counts to count
+  // Loop over the number of mount points, and add each of their listener
+  // counts to count
   for ( var i = 0; i < data.icestats.source.length; i++ ) {
     count = count + data.icestats.source[i].listeners;
   }
 
-  // Update the listener count field on the board with
-  // the count
-  $('#listeners').text(count);
+  // Update the listener count field with the count
+  $('#listeners').text( count );
 }
 
-// If new song objects are present in data, transition the
-// bottom object off the trackback list and the new on until
-// all five most recently logged songs are displayed
+/*
+ * If new song objects are present in data, transition the bottom object
+ * off the trackback list and the new on until all five most recently
+ * logged songs are displayed
+ */
 function check_trackback( i, data ) {
   // Run if there are new song objects
   if ( i < data.length ) {
