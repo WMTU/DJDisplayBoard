@@ -207,7 +207,7 @@ function check_logging() {
   $.getJSON( "http://10.0.1.10/log/api/v1.0/songs", {desc: true, n: 1},
       function( data ) {
     // Construct a date object from the song's timestamp
-    var date = new Date( data["songs"][0].ts );
+    var date = new Date( data["songs"][0].timestamp );
 
     // If the song was logged more than 1,050,000 milliseconds ago (17m30s),
     // display the alert message; otherwise, hide it
@@ -346,9 +346,24 @@ function cycleImageFeed() {
   } );
 }
 
+function daysSinceLastIncident() {
+  // Get the most recently logged discrepancy
+  $.getJSON( "http://10.0.1.10/log/api/v1.0/discrepancies", {n: 1, desc: true},
+      function( data ) {
+    // Construct a date object from the song's timestamp
+    var date = new Date( data["discrepancies"][0].timestamp );
+
+    // Calculate the number of days elapsed since date
+    var days = Math.floor( ( new Date() - date ) / 86400000 );
+
+    // Update the display with the new value
+    $('#dayssince').text( days );
+  });
+}
+
 function ten_second_interval() {
   // Do the days since incident
-  $('#dayssince').load("./incident.php");
+  daysSinceLastIncident();
 
   // Get web stream listeners
   $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", function( data ) {
