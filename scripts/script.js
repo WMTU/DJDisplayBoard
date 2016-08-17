@@ -236,76 +236,97 @@ function czech_listeners( data ) {
 }
 
 /*
- * If new song objects are present in data, transition the bottom object
- * off the trackback list and the new on until all five most recently
- * logged songs are displayed
+ * Convert song data from object to HTML
  */
-function check_trackback( i, data ) {
-  // Run if there are new song objects
-  if ( i < data.length ) {
-    // Select the last visible song on the trackback list
-    var lasttrack = $('#djlog').children().last();
+function song_obj_to_html( song ) {
+  // Start our HTML output variable
+  var html = '';
 
-    // Hide the last visible song
-    lasttrack.toggleClass('collapsed');
+  // Open a new trackback div
+  html += '<div class="trackback">';
 
-    // Wait 300 milliseconds, then remove the last song
-    // and display a new one
-    setTimeout(cycle_trackback(i, data, lasttrack), 300);
-  }
+  // Append song info
+  html += '<h3>' + song.title + '</h3>';
+  html += '<p>' + song.artist + '</p>';
+  if ( song.album == '' )
+    html += '<p>N/A</p>';
+  else
+    html += '<p>' + song.album + '</p>';
+
+  // Close the trackback div
+  html += '</div>';
+
+  // Return the HTML output
+  return html;
+}
+
+/*
+ * Wrap child elements of container element in marquee tags
+ * if they're wider than it
+ */
+function marquee_wrap( container ) {
+  container.children().each( function() {
+    var child = this;
+
+    // Wrap the child element's contents with a span
+    // and measure both its width and the container's
+    // width
+    var original_text = child.html();
+    child.html('<span>' + original_text + '</span>');
+    var child_width = child.children().eq(0).width();
+    var container_width = container.width();
+
+    // Restore the original state of the child element
+    child.html(original_text);
+
+    // If the child's width is greater than the
+    // container, wrap the child's contents with tags
+    // to pad its left and right edges and add a
+    // marquee scrolling effect
+    if ( child_width > container_width )
+      child.html('<div class="marquee-wrap"><div class="marquee">' + original_text + '</div></div>');
+  });
 };
 
-// Remove the last song from the trackback list, and add
-// and show one corresponding to the i-th song object in
-// data, then call check_trackback again to check whether
-// or not there are additional new songs objects to add
-function cycle_trackback( i, data, lasttrack ) {
-  // Remove the last song on the trackback list
-  lasttrack.remove(); 
+/*
+ * Load new song records into the trackback
+ */
+function load_trackback( first, id ) {
+  // Setup API request parameters
+  var params = {desc: true};
+  if ( first )
+    params.n = 5;
+  else
+    params.id = id;
 
-  // Get the new song object and append it to the
-  // trackback list
-  var html = $(data[i]);
-  html.toggleClass('collapsed');
-  $('#djlog').prepend(html);
+  // Get songs data from Log app
+  $.getJSON( "http://10.0.1.10/log/api/v1.0/songs", params, function( data ) {
+    // Extract songs array from JSON data
+    var songs = data["songs"];
 
-  // Wrap the song, artist and album text rows with
-  // marquee tags if the contents are too long for
-  // the container element
-  marquee_wrap(html, html.children().eq(0));
-  marquee_wrap(html, html.children().eq(1));
-  marquee_wrap(html, html.children().eq(2));  
+    // Loop over songs
+    for ( var i = songs.length - 1; i >= 0; i++ ) {
+      // Convert the i-th song to HTML
+      var html = song_obj_to_html( songs[i] );
 
-  // Wait five milliseconds, then show the new song
-  // on the trackback list, then wait 300 milliseconds
-  // and check for more new song objects
-  setTimeout( function() {
-    html.toggleClass('collapsed');
-    setTimeout( check_trackback( ++i, data ), 500 );
-  }, 5 );
-};
+      // Prepend song HTML to trackback and hide it
+      $('#djlog').prepend( html );
+      html.hide();
 
-// Wrap child in marquee tags if it is wider than
-// container
-function marquee_wrap( container, child ) {
-  // Wrap the child element's contents with a span
-  // and measure both its width and the container's
-  // width
-  var original_text = child.html();
-  child.html('<span>' + original_text + '</span>');
-  var child_width = child.children().eq(0).width();
-  var container_width = container.width();
+      // Add marquee effect to long song fields
+      marquee_wrap( html );
 
-  // Restore the original state of the child element
-  child.html(original_text);
+      // If this isn't one of the first set of songs being loaded to the
+      // trackback, remove the last visible song to make room for it
+      $('#djlog').children().last().remove();
 
-  // If the child's width is greater than the
-  // container, wrap the child's contents with tags
-  // to pad its left and right edges and add a
-  // marquee scrolling effect
-  if ( child_width > container_width )
-    child.html('<div class="marquee-wrap"><div class="marquee">' + original_text + '</div></div>');
-};
+      // Wait 300 ms, then toggle display animation
+      setTimeout( function() { html.slideToggle(); }, 300 );
+    }
+
+    return songs[0].id;
+  });
+}
 
 function cycleTwitterFeed( i, data, cut ) {
   if ( i < data.length ) {
@@ -361,7 +382,7 @@ function daysSinceLastIncident() {
   });
 }
 
-function ten_second_interval() {
+function ten_second_interval( last_song_id ) {
   // Do the days since incident
   daysSinceLastIncident();
 
@@ -371,10 +392,7 @@ function ten_second_interval() {
   } );
 
   // Do the trackback feed
-  $.getJSON( "./trackback.php?first=false", function( data ) {
-    var i = 0;
-    check_trackback( i, data );
-  } );
+  last_song_id = load_trackback( false, last_song_id );
 
   // Do the Twitter feed
   $.getJSON( "./twitter.php?first=false", function( data ) {
@@ -389,7 +407,7 @@ function ten_second_interval() {
   check_logging();
 
   // Run again in ten seconds
-  setTimeout(ten_second_interval,10000);
+  setTimeout(ten_second_interval( last_song_id ),10000);
 }
 
 var Sync = function() {
@@ -412,23 +430,7 @@ $( function() {
   } )();
 
   // Populate the trackback list
-  ( function refresh_log() {
-    // Populate the container
-    $.getJSON( "./trackback.php?first=true", function( data ) {
-      for ( var i = 0; i < data.length; i++ ) {        
-        // Get and append new element
-        var html = $(data[i]);
-        $('#djlog').prepend(html);
-
-        marquee_wrap( html, html.children().eq(0) );
-        marquee_wrap( html, html.children().eq(1) );
-        marquee_wrap( html, html.children().eq(2) );
-        
-        html.hide();
-        html.slideToggle();
-      }
-    } );
-  } )();
+  var last_song_id = load_trackback( true );
 
   // Populate the twitter request feed
   ( function refresh_tweets() {
@@ -448,5 +450,5 @@ $( function() {
   // Refresh the page every hour
   setTimeout(Sync, 60*60*1000); 
 
-  ten_second_interval();
+  ten_second_interval( last_song_id );
 } );
