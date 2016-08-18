@@ -305,7 +305,7 @@ function load_trackback( first, id ) {
     var songs = data["songs"];
 
     // Loop over songs
-    for ( var i = songs.length - 1; i >= 0; i++ ) {
+    for ( var i = songs.length - 1; i >= 0; i-- ) {
       // Convert the i-th song to HTML
       var html = song_obj_to_html( songs[i] );
 
