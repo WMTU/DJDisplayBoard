@@ -206,12 +206,14 @@ function check_logging() {
   // Get the most recently logged song
   $.getJSON( "http://10.0.1.10/log/api/v1.0/songs", {desc: true, n: 1},
       function( data ) {
-    // Construct a date object from the song's timestamp
-    var date = new Date( data["songs"][0].timestamp );
+    // Construct a moment from the song's timestamp
+    var mom_song = moment( data["songs"][0].timestamp, moment.ISO_8601 );
+    // Construct a moment for the threshold of 17m30s ago
+    var mom_threshold = moment().subtract( 17, 'minutes' ).subtract( 30, 'seconds' );
 
-    // If the song was logged more than 1,050,000 milliseconds ago (17m30s),
-    // display the alert message; otherwise, hide it
-    if ( new Date() - date > 1050000 )
+    // If the song was logged before our threshold (17m30s), display the
+    // alert message; otherwise, hide it
+    if ( mom_song.isBefore( mom_threshold ) )
       $('#alert').css( 'display','initial' );
     else
       $('#alert').css( 'display','none' );
@@ -350,11 +352,11 @@ function daysSinceLastIncident() {
   // Get the most recently logged discrepancy
   $.getJSON( "http://10.0.1.10/log/api/v1.0/discrepancies", {n: 1, desc: true},
       function( data ) {
-    // Construct a date object from the song's timestamp
-    var date = new Date( data["discrepancies"][0].timestamp );
+    // Construct a moment from the song's timestamp
+    var mom_discrepancy = moment( data["discrepancies"][0].timestamp );
 
     // Calculate the number of days elapsed since date
-    var days = Math.floor( ( new Date() - date ) / 86400000 );
+    var days = moment().diff( mom_discrepancy, 'days' );
 
     // Update the display with the new value
     $('#dayssince').text( days );
