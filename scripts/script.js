@@ -268,7 +268,7 @@ function song_obj_to_html( song ) {
  */
 function marquee_wrap( container ) {
   container.children().each( function() {
-    var child = this;
+    var child = $(this);
 
     // Wrap the child element's contents with a span
     // and measure both its width and the container's
@@ -308,22 +308,20 @@ function load_trackback( first, id ) {
 
     // Loop over songs
     for ( var i = songs.length - 1; i >= 0; i-- ) {
-      // Convert the i-th song to HTML
-      var html = song_obj_to_html( songs[i] );
-
-      // Prepend song HTML to trackback and hide it
-      $('#djlog').prepend( html );
-      html.hide();
-
-      // Add marquee effect to long song fields
-      marquee_wrap( html );
-
       // If this isn't one of the first set of songs being loaded to the
       // trackback, remove the last visible song to make room for it
-      $('#djlog').children().last().remove();
+      if ( !first )
+        $('#djlog').children().last().remove();
 
-      // Wait 300 ms, then toggle display animation
-      setTimeout( function() { html.slideToggle(); }, 300 );
+      // Prepend song HTML to trackback, save its selector, and hide it
+      $('#djlog').prepend( song_obj_to_html( songs[i] ) );
+      var item = $('#djlog .trackback:first-child').hide();
+
+      // Add marquee effect to long song fields
+      marquee_wrap( item );
+
+      // Toggle 300 ms display animation
+      item.show( 300 );
     }
 
     return songs[0].id;
