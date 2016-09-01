@@ -6,6 +6,7 @@
 <script src="./scripts/jquery-2.1.4.min.js"></script>
 <script src="./scripts/jquery.textfill.js"></script>
 <script src="//cdn.jsdelivr.net/jquery.marquee/1.3.1/jquery.marquee.min.js"></script>
+<script src="./scripts/moment.min.js"></script>
 <script src="./scripts/script.js"></script>
 <link rel="stylesheet" type="text/css" href="./css/boardStyle.css">
 <link rel="stylesheet" type="text/css" href="./css/fonts.css">
