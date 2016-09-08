@@ -268,14 +268,13 @@ function song_obj_to_html( song ) {
  */
 function marquee_wrap( container ) {
   container.children().each( function() {
-    var child = $(this);
+    var child = $( this );
 
-    // Wrap the child element's contents with a span
-    // and measure both its width and the container's
-    // width
+    // Wrap the child element's contents with a span and measure both
+    // its width and the container's width
     var original_text = child.html();
-    child.html('<span>' + original_text + '</span>');
-    var child_width = child.children().eq(0).width();
+    child.html( "<span>" + original_text + "</span>" );
+    var child_width = child.children().eq( 0 ).width();
     var container_width = container.width();
 
     // Restore the original state of the child element
@@ -291,41 +290,80 @@ function marquee_wrap( container ) {
 };
 
 /*
- * Load new song records into the trackback
+ * Load new song records into the trackback element
  */
 function load_trackback( first, id ) {
-  // Setup API request parameters
-  var params = {desc: true};
-  if ( first )
+  // Set up API request parameters
+  var params = { desc: true };
+  if ( first ) {
     params.n = 5;
-  else
+  } else {
     params.id = id;
+  }
 
-  // Get songs data from Log app
-  $.getJSON( "http://10.0.1.10/log/api/v1.0/songs", params, function( data ) {
-    // Extract songs array from JSON data
-    var songs = data["songs"];
+  // Declare a variable for the return value and initialize it to id (if 
+  // there are no new songs, we want to return the last-added ID again)
+  var return_value = id;
 
-    // Loop over songs
-    for ( var i = songs.length - 1; i >= 0; i-- ) {
-      // If this isn't one of the first set of songs being loaded to the
-      // trackback, remove the last visible song to make room for it
-      if ( !first )
-        $('#djlog').children().last().remove();
+  // Get song data from Log app
+  $.ajax( {
+    url: "http://10.0.1.10/log/api/v1.0/songs",
+    dataType: "json",
+    async: false,
+    data: params,
+    success: function( data ) {
+      // Declare variables
+      var i;
+      var queue = [];
 
-      // Prepend song HTML to trackback, save its selector, and hide it
-      $('#djlog').prepend( song_obj_to_html( songs[i] ) );
-      var item = $('#djlog .trackback:first-child').hide();
+      // Declare function to dequeue elements and toggle their collapsed status,
+      // as well as remove the last element toggled if it is collapsed
+      function process_queue( last_element ) {
+        if ( queue.length > 0 ) {
+          var element = queue.shift();
+          element.toggleClass( "collapsed" );
+          setTimeout( process_queue, 300, element );
+        }
+        if ( last_element !== undefined && last_element.hasClass( "collapsed" ) ) {
+          last_element.remove();
+        }
+      }
 
-      // Add marquee effect to long song fields
-      marquee_wrap( item );
+      // Extract songs array from JSON data
+      var songs = data.songs;
 
-      // Toggle 300 ms display animation
-      item.show( 300 );
+      // Loop over songs
+      for ( i = songs.length - 1; i >= 0; i -= 1 ) {
+        // Generate a div element for the new song and toggle it collapsed
+        var item = $( song_obj_to_html( songs[i] ) );
+        item.toggleClass( "collapsed" );
+
+        // Prepend the new song div to the trackback list element
+        $( "#djlog" ).prepend( item );
+
+        // Add a marquee effect to overflowing fields in the song div
+        marquee_wrap( item );
+
+        // If this isn't one of the first set of songs being loaded to the
+        // trackback, queue the last visible song to be collapsed and then
+        // removed, to make room for the new one
+        if ( !first ) {
+          queue.push( $( "#djlog .trackback:nth-last-child(" + ( songs.length - i ) + ")" ) );
+        }
+
+        // Queue the new song div to be shown
+        queue.push( item );
+      }
+
+      // Process the queue and set the return value to the ID of the last-added song
+      if ( songs.length > 0 ) {
+        process_queue();
+        return_value = songs[0].id;
+      }
     }
+  } );
 
-    return songs[0].id;
-  });
+  return return_value;
 }
 
 function cycleTwitterFeed( i, data, cut ) {
@@ -358,81 +396,97 @@ function cycleTwitterFeed( i, data, cut ) {
   }
 };
 
+/*
+ * Load the next image onto the page
+ */
 function cycleImageFeed() {
-  $('#images').fadeOut( 'normal', function() {
-    $.get( './images.php', function(data) {
-      $('#images').attr( 'src', data );
-      $('#images').fadeIn();
+  $( "#images" ).fadeOut( "normal", function() {
+    $.get( "./images.php", function( data ) {
+      $( "#images" ).attr( "src", data );
+      $( "#images" ).fadeIn();
     } );
   } );
 }
 
+/*
+ * Load the number of days since the last discrepancy log was
+ * filed onto the page
+ */
 function daysSinceLastIncident() {
-  // Get the most recently logged discrepancy
-  $.getJSON( "http://10.0.1.10/log/api/v1.0/discrepancies", {n: 1, desc: true},
-      function( data ) {
-    // Construct a moment from the song's timestamp
-    var mom_discrepancy = moment( data["discrepancies"][0].timestamp );
+  // Get the most recently filed discrepancy log
+  $.getJSON( "http://10.0.1.10/log/api/v1.0/discrepancies", {
+        n: 1,
+        desc: true
+      }, function( data ) {
+    // Construct a moment from the discrepancy log's timestamp
+    var mom_discrepancy = moment( data.discrepancies[0].timestamp );
 
-    // Calculate the number of days elapsed since date
-    var days = moment().diff( mom_discrepancy, 'days' );
+    // Calculate the number of days elapsed since the log was filed
+    var days = moment().diff( mom_discrepancy, "days" );
 
-    // Update the display with the new value
-    $('#dayssince').text( days );
-  });
+    // Update the appropriate element on the page with the new value
+    $( "#dayssince" ).text( days );
+  } );
 }
 
+/*
+ * Reload certain dynamic page features every ten seconds
+ */
 function ten_second_interval( last_song_id ) {
-  // Do the days since incident
+  // Reload the number of days since the last discrepancy log
+  // was filed
   daysSinceLastIncident();
 
-  // Get web stream listeners
-  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", function( data ) {
-    czech_listeners(data);
-  } );
+  // Reload the number of web stream listeners
+  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", undefined, czech_listeners );
 
-  // Do the trackback feed
+  // Load new items into the trackback feed
   last_song_id = load_trackback( false, last_song_id );
 
-  // Do the Twitter feed
+  // Load new items into the Twitter request feed
   $.getJSON( "./twitter.php?first=false", function( data ) {
     var i = 0;
     cycleTwitterFeed( i, data, false );
   } );
 
-  // Do the images
+  // Reload the image
   cycleImageFeed();
 
-  // Warn if songs aren't logged
+  // Check whether or not songs are being logged
   check_logging();
 
   // Run again in ten seconds
-  setTimeout(ten_second_interval( last_song_id ),10000);
+  setTimeout( ten_second_interval, 10000, last_song_id );
 }
 
-var Sync = function() {
-  // Refresh the page
+/*
+ * Reload the page, and set a timeout to reload again in an hour
+ */
+function reload_page() {
+  // Reload the page
   location.reload();
 
-  // Sync again in an hour
-  setTimeout(Sync, 60*60*1000);
+  // Reload again in an hour
+  setTimeout( reload_page, 60*60*1000 );
 }
 
-// On page ready
-$( function() {
+/*
+ * When the document is ready, initialize dynamic page features
+ */
+$( document ).ready( function() {
   // Start the clock
   ( function refresh_clock() {
       // Load the time onto the board
-      $("#clock").load("./time.php");
+      $( "#clock" ).load( "./time.php" );
 
       // Repeat every second
-      setTimeout(refresh_clock,1000);
+      setTimeout( refresh_clock, 1000 );
   } )();
 
   // Populate the trackback list
   var last_song_id = load_trackback( true );
 
-  // Populate the twitter request feed
+  // Populate the Twitter request feed
   ( function refresh_tweets() {
     // Populate the container
     $.getJSON( "./twitter.php?first=true", function( data ) {
@@ -448,7 +502,9 @@ $( function() {
   refresh_weather();
 
   // Refresh the page every hour
-  setTimeout(Sync, 60*60*1000); 
+  setTimeout( reload_page, 60*60*1000 ); 
 
+  // Load the rest of the dynamic page features and start the
+  // ten-second reload loop
   ten_second_interval( last_song_id );
 } );
