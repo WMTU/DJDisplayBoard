@@ -438,7 +438,7 @@ function ten_second_interval( last_song_id ) {
   daysSinceLastIncident();
 
   // Reload the number of web stream listeners
-  $.getJSON( "http://stream.wmtu.mtu.edu:8000/status-json.xsl", undefined, czech_listeners );
+  $.getJSON( "https://stream.wmtu.mtu.edu:8000/status-json.xsl", undefined, czech_listeners );
 
   // Load new items into the trackback feed
   last_song_id = load_trackback( false, last_song_id );
